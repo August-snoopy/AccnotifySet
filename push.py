@@ -4,19 +4,31 @@ import sys
 import os
 import re
 from datetime import datetime, timedelta
+from urllib.parse import quote  # 必须引入这个来处理中文
 
-# 配置区
 ACC_TOKEN = os.getenv("ACC_TOKEN")
-API_URL = f"https://an.trah.cn/push/{ACC_TOKEN}"
+# 注意：这里我们把 API_URL 后面那个斜杠去掉，方便后面拼接
+API_BASE = f"https://an.trah.cn/push/{ACC_TOKEN}"
 START_DATE = datetime(2026, 3, 2)
 
 def send_push(title, content):
     if not ACC_TOKEN:
-        print("错误: 未找到 ACC_TOKEN")
+        print("Error: ACC_TOKEN not found")
         return
-    payload = {"title": title, "content": content}
-    res = requests.post(API_URL, data=payload, timeout=10)
-    print(f"推送响应: {res.status_code}")
+    
+    # 对标题和内容进行 URL 编码，解决 400 错误
+    safe_title = quote(title)
+    safe_content = quote(content)
+    
+    # 构造标准的 GET 请求 URL
+    final_url = f"{API_BASE}?title={safe_title}&content={safe_content}"
+    
+    try:
+        res = requests.get(final_url, timeout=10) # 很多推送接口对 GET 支持更好
+        print(f"推送响应状态码: {res.status_code}")
+        print(f"服务器反馈: {res.text}")
+    except Exception as e:
+        print(f"请求失败: {e}")
 
 def get_current_week(now):
     delta = now - START_DATE
@@ -44,14 +56,18 @@ def main():
 
     if mode == "summary":
         title = f"📅 第{curr_week}周 {today_name} 课程概览"
-        content = "\n".join([f"⏰ {e['time']} | {e['name']} @{e['location']}" for e in active_events]) if active_events else "今天没课，享受科研！"
+        if active_events:
+            content = "\n".join([f"⏰ {e['time']} | {e['name']} @{e['location']}" for e in active_events])
+        else:
+            content = "今天没课，享受科研！"
         send_push(title, content)
     else:
         for event in active_events:
             ev_time = datetime.strptime(event['time'].strip(), "%H:%M").replace(year=now.year, month=now.month, day=now.day)
             diff = (ev_time - now).total_seconds() / 60
-            if 15 <= diff <= 25:
+            # 扩大检测范围到 30 分钟，确保手动测试能触发
+            if 0 <= diff <= 30:
                 send_push("🔔 上课提醒", f"课程：{event['name']}\n地点：{event['location']}\n时间：{event['time']}")
 
 if __name__ == "__main__":
-    main()                                                                                                                                                                                                                                                                                                                         
+    main()
