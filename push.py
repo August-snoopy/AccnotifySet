@@ -74,11 +74,12 @@ def main():
             if 15 < diff <= 40:
                 title = f"📌 {event['time']} 预告"
                 content = f"{event['name']} | @{event['location']}"
-                send_push(title, content)     
+                send_push(title, content)
             # 2. 即将开始 (0-15分钟)
             elif 0 <= diff <= 15:
                 title = f"🔔 {event['time']} 准备上课"
                 content = f"{event['name']} | @{event['location']}"
                 send_push(title, content)
+                
 if __name__ == "__main__":
     main()
