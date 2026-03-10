@@ -1,0 +1,38 @@
+name: Accnotify Daily Schedule
+
+on:
+  schedule:
+    # 每天北京时间 08:00 (UTC 00:00) 推送概览
+    - cron: '0 0 * * *'
+    # 每 10 分钟检查一次课前提醒 (北京时间 08:00-22:00 活跃，即 UTC 00:00-14:00)
+    - cron: '*/10 0-14 * * *'
+  workflow_dispatch: # 允许手动触发测试
+
+jobs:
+  run_schedule_task:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Dependencies
+        run: pip install requests
+
+      - name: Run Summary Task
+        # 如果是早上 8 点触发或者是手动点击运行，则跑概览
+        if: github.event.schedule == '0 0 * * *' || github.event_name == 'workflow_dispatch'
+        env:
+          ACC_TOKEN: ${{ secrets.ACC_TOKEN }}
+        run: python push.py summary
+
+      - name: Run Reminder Task
+        # 如果是每 10 分钟的定时触发，则跑课前检查
+        if: github.event.schedule != '0 0 * * *'
+        env:
+          ACC_TOKEN: ${{ secrets.ACC_TOKEN }}
+        run: python push.py reminder
