@@ -16,15 +16,17 @@ def send_push(title, content):
         print("Error: ACC_TOKEN not found")
         return
     
-    # 对标题和内容进行 URL 编码，解决 400 错误
-    safe_title = quote(title)
-    safe_content = quote(content)
+    # 注意：路径参数中不能包含未转义的斜杠 / 或特殊字符
+    safe_title = quote(title.replace("/", " "))
+    safe_content = quote(content.replace("/", " "))
     
-    # 构造标准的 GET 请求 URL
-    final_url = f"{API_BASE}?title={safe_title}&content={safe_content}"
+    # 严格按照样例图格式：https://an.trah.cn/push/{TOKEN}/{标题}/{内容}
+    final_url = f"https://an.trah.cn/push/{ACC_TOKEN}/{safe_title}/{safe_content}"
     
     try:
-        res = requests.get(final_url, timeout=10) # 很多推送接口对 GET 支持更好
+        # 发送请求
+        print(f"正在发送请求到: {final_url}")
+        res = requests.get(final_url, timeout=10)
         print(f"推送响应状态码: {res.status_code}")
         print(f"服务器反馈: {res.text}")
     except Exception as e:
