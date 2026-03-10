@@ -54,39 +54,4 @@ def main():
                 send_push("🔔 上课提醒", f"课程：{event['name']}\n地点：{event['location']}\n时间：{event['time']}")
 
 if __name__ == "__main__":
-    main()
-                                                                                          # 强制获取北京时间
-                                                                                                now = datetime.utcnow() + timedelta(hours=8)
-                                                                                                    curr_week = get_current_week(now)
-                                                                                                        
-                                                                                                            with open('schedule.json', 'r', encoding='utf-8') as f:
-                                                                                                                    all_data = json.load(f)
-                                                                                                                        
-                                                                                                                            weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-                                                                                                                                today_name = weekdays[now.weekday()]
-                                                                                                                                    today_events = all_data.get(today_name, [])
-
-                                                                                                                                        # 过滤当前周有效的课程
-                                                                                                                                            active_events = [e for e in today_events if is_course_active(e['name'], curr_week)]
-
-                                                                                                                                                if mode == "summary":
-                                                                                                                                                        title = f"📅 第{curr_week}周 {today_name} 课程概览"
-                                                                                                                                                                if not active_events:
-                                                                                                                                                                            content = "今天没有排课，可以专注科研或休息。"
-                                                                                                                                                                                    else:
-                                                                                                                                                                                                content = "\n".join([f"⏰ {e['time']} | {e['name']} @{e['location']}" for e in active_events])
-                                                                                                                                                                                                        send_push(title, content)importimportimport
-
-                                                                                                                                                                                                            elif mode == "reminder":
-                                                                                                                                                                                                                    for event in active_events:
-                                                                                                                                                                                                                                ev_time = datetime.strptime(event['time'], "%H:%M").replace(
-                                                                                                                                                                                                                                                year=now.year, month=now.month, day=now.day
-                                                                                                                                                                                                                                                            )
-                                                                                                                                                                                                                                                                        diff = (ev_time - now).total_seconds() / 60
-                                                                                                                                                                                                                                                                                    
-                                                                                                                                                                                                                                                                                                # 课前 15-25 分钟触发提醒
-                                                                                                                                                                                                                                                                                                            if 15 <= diff <= 25:
-                                                                                                                                                                                                                                                                                                                            send_push("🔔 上课提醒", f"课程：{event['name']}\n地点：{event['location']}\n上课时间：{event['time']}")
-
-                                                                                                                                                                                                                                                                                                                            if __name__ == "__main__":
-                                                                                                                                                                                                                                                                                                                                main()import
+    main()                                                                                                                                                                                                                                                                                                                         
