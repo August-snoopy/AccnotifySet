@@ -67,17 +67,18 @@ def main():
         for event in active_events:
             ev_time = datetime.strptime(event['time'].strip(), "%H:%M").replace(year=now.year, month=now.month, day=now.day)
             diff = (ev_time - now).total_seconds() / 60
-            # 1. 提前30分钟提醒（针对 10 分钟一次的 cron，范围设为 25-35）
-            if 25 < diff <= 35:
-                title = "📌 课程预告（别忘了哦）"
-                content = f"半小时后有课：{event['name']} @{event['location']}"
+            # 在日志中打印调试信息，方便排查
+            print(f"DEBUG: 课程[{event['name']}] 时间[{event['time']}] 距离现在还差: {diff:.1f} 分钟")        
+            # --- 双重提醒：加入具体时间 ---
+            # 1. 提前预告 (15-40分钟)
+            if 15 < diff <= 40:
+                title = f"📌 {event['time']} 预告"
+                content = f"{event['name']} | @{event['location']}"
+                send_push(title, content)     
+            # 2. 即将开始 (0-15分钟)
+            elif 0 <= diff <= 15:
+                title = f"🔔 {event['time']} 准备上课"
+                content = f"{event['name']} | @{event['location']}"
                 send_push(title, content)
-            
-            # 2. 提前10分钟提醒（针对 10 分钟一次的 cron，范围设为 0-11）
-            elif 0 <= diff <= 11:
-                title = "🔔 准备上课（该出发了）"
-                content = f"课程即将开始：{event['name']} @{event['location']}"
-                send_push(title, content)
-                
 if __name__ == "__main__":
     main()
